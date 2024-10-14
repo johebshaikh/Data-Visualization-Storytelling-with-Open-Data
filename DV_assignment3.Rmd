@@ -1,0 +1,94 @@
+---
+title: "Australian road fatalitites from 2015-2020"
+output: 
+  flexdashboard::flex_dashboard:
+    theme: journal
+    orientation: columns
+---
+
+```{r setup, include=FALSE}
+library(readr)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(plotly)
+library(flexdashboard)
+```
+
+Australian road fatalities analysis
+=======================================================================
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### **Road accidents mortality trends in all states**
+```{r}
+# reading the Australian accident data set (2015-2020)
+fatalities<-read.csv("fatalities.csv", stringsAsFactors = FALSE)
+
+# changing column names for better understanding
+
+names(fatalities)[names(fatalities) == "Crash.Type"] <- "Crash_Type" 
+names(fatalities)[names(fatalities) == "Speed.Limit"] <- "Speed_Limit" 
+names(fatalities)[names(fatalities) == "Road.User"] <- "Road_User" 
+names(fatalities)[names(fatalities) == "National.Remoteness.Areas"] <- "National_Remoteness_Areas" 
+names(fatalities)[names(fatalities) == "Age.Group"] <- "Age_Group" 
+names(fatalities)[names(fatalities) == "Time.of.day"] <- "Time_of_day "
+names(fatalities)[names(fatalities) == "Bus.Involvement"] <- "Bus_Involvement "
+names(fatalities)[names(fatalities) == "Heavy.Rigid.Truck.Involvement"] <- "Heavy_Rigid_Truck_Involvement "
+names(fatalities)[names(fatalities) == "Articulated.Truck.Involvement"] <- "Articulated_Truck_Involvement "
+
+###Accidents occured for every state with respect to year
+fatalities_3<-fatalities%>%group_by(`State`,Year)%>%summarise(count=n())
+
+line_graph_1<-plot_ly(fatalities_3)%>%add_lines(color=~fatalities_3$State,x=~fatalities_3$Year,y=~fatalities_3$count,
+                                                 hoverinfo = "text",
+                      text = paste("Year:", fatalities_3$Year, ",",
+                                   "Count of deaths:", fatalities_3$count)) %>%
+  layout(yaxis = list(title = "COUNT"), xaxis = list(title = "YEAR"))
+line_graph_1
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### **Mortality rates (Day Vs Night)**
+```{r}
+###Accidents occured related to Day/Night from the period(2015-2020)
+
+fatalities_1<-fatalities%>%group_by(`Time_of_day `, Year)%>%summarise(count=n())
+
+fatalities_2<-plot_ly(data=fatalities_1, x=~fatalities_1$`Time_of_day `,y=~fatalities_1$count, type = 'bar',
+                      marker = list(color = 'rgb(55, 83, 109)'),
+                      hoverinfo = "text",
+                      text = paste("Year:", fatalities_1$Year, ",",
+                                   "Number of deaths:", fatalities_1$count)) %>% 
+layout(yaxis = list(zeroline = FALSE, showgrid = FALSE, title = "COUNT"), xaxis = list(title = "TIME OF DAY"))
+fatalities_2
+
+```
+
+### **Lives lost in different age groups**
+```{r}
+### Accident occured in every year with respect to age groups
+fatalities_4<-fatalities%>%group_by(`Age_Group`,Year)%>%summarise(count=n())
+
+line_graph_2<-plot_ly(fatalities_4)%>%add_lines(color=~fatalities_4$Age_Group,x=~fatalities_4$Year,y=~fatalities_4$count) %>% layout(yaxis = list(zeroline = FALSE, title = "COUNT"), xaxis = list(title = "YEAR"))
+
+
+line_graph_2
+
+```
+
+Reference
+=======================================================================
+  
+* 
+The dataset **Australian Road Deaths**(ARDD fatalities). Restored November 1, from data.gov.au website:-
+https://data.gov.au/data/dataset/australian-road-deaths-database/resource/fd646fdc-7788-4bea-a736-e4aeb0dd09a8
+
+
+
+
+
